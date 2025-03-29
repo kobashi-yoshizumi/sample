@@ -1,3 +1,5 @@
+import { GraphQLAuthMode } from './amplifyAuthModes';
+
 const amplifyConfig = {
   Auth: {
     Cognito: {
@@ -14,7 +16,7 @@ const amplifyConfig = {
     GraphQL: {
       endpoint: "https://pzjdggifqfetjp3vr6awpcqtcq.appsync-api.ap-northeast-1.amazonaws.com/graphql",
       region: "ap-northeast-1",
-      defaultAuthMode: "userPool", // Cognito User Pool を使用
+      defaultAuthMode: GraphQLAuthMode.AMAZON_COGNITO_USER_POOLS, // Cognito User Pool を使用
     },
   },
 

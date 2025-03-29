@@ -30,7 +30,9 @@ const App: React.FC = () => {
           authMode: "userPool", // ✅ これだけでOK
         });
 
-        setRecords(response.data.listRecords);
+        if ('data' in response && response.data?.listRecords) {
+          setRecords(response.data.listRecords);
+        }
       } catch (error) {
         console.error("Error fetching records:", error);
       }
