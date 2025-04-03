@@ -3,12 +3,43 @@ frontend:
   phases:
     preBuild:
       commands:
-        - npm ci  # または `npm install`（CI環境ならこちらが推奨）
+        - echo "Fetching parameters from SSM..."
+        - APP_SYNC_URL=$(aws ssm get-parameter --name "AppSyncAPIURL" --region ap-northeast-1 --query "Parameter.Value" --output text)
+        - USER_POOL_ID=$(aws ssm get-parameter --name "UserPoolId" --region ap-northeast-1 --query "Parameter.Value" --output text)
+        - USER_POOL_CLIENT_ID=$(aws ssm get-parameter --name "UserPoolClientId" --region ap-northeast-1 --query "Parameter.Value" --output text)
+
+        - echo "Creating amplifyConfig.ts from SSM values..."
+        - |
+          cat <<EOF > src/amplifyConfig.ts
+          import { GraphQLAuthMode } from './amplifyAuthModes';
+
+          const amplifyConfig = {
+            Auth: {
+              Cognito: {
+                region: "ap-northeast-1",
+                userPoolId: "$USER_POOL_ID",
+                userPoolClientId: "$USER_POOL_CLIENT_ID",
+              },
+            },
+            API: {
+              GraphQL: {
+                endpoint: "$APP_SYNC_URL",
+                region: "ap-northeast-1",
+                defaultAuthMode: GraphQLAuthMode.AMAZON_COGNITO_USER_POOLS,
+              },
+            },
+          };
+
+          export default amplifyConfig;
+          EOF
+
+        - cat src/amplifyConfig.ts
+        - npm ci  # ここはそのまま
     build:
       commands:
         - npm run build
   artifacts:
-    baseDirectory: dist  # Viteはデフォルトでdistに出力される
+    baseDirectory: dist
     files:
       - '**/*'
   cache:
